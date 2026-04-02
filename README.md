@@ -14,7 +14,7 @@ Bu paket iki katman sunar:
 
 Yani tek paketle hem uygulama içinde SDK gibi kullanabilir, hem de MCP istemcilerine araç servisi olarak bağlayabilirsiniz.
 
-> ⚠️ Bu paket vergiye tabi mali veri üretimine aracılık edebilir. Risk kullanıcıya aittir. Üretimde dikkatli kullanın.
+> ⚠️ Bu paket vergiye tabi mali veri üretimine aracılık edebilir. Risk kullanıcıya aittir. Dikkatli kullanın.
 
 ## Neler var?
 
