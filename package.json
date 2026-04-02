@@ -13,6 +13,9 @@
   "bugs": {
     "url": "https://github.com/Rekl0w/fatura-kit/issues"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "mcp",
     "model-context-protocol",
@@ -31,7 +34,7 @@
     "bun": ">=1.1.0"
   },
   "bin": {
-    "fatura-kit": "./dist/cli.mjs"
+    "fatura-kit": "dist/cli.mjs"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",

@@ -197,18 +197,6 @@ Paket, upstream `mlevent/fatura` testlerinden türetilen ve genişletilen parity
 - tevkifat / özel matrah / istisna senaryoları
 - sms / html / download / request akışları
 
-## Yayınlama
-
-npm’e yayın için temel akış hazır:
-
-```bash
-bun run check
-bun run build
-npm publish --access public
-```
-
-GitHub Actions tarafında da CI ve publish workflow dosyaları eklenmiştir.
-
 ## Sürümleme yaklaşımı
 
 - `CHANGELOG.md` kullanıcıya dönük değişiklikleri özetler
