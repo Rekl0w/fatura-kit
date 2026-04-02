@@ -184,25 +184,6 @@ Desteklenen placeholder anahtarlar:
 
 Varsayılan test suite gerçek GİB’e gitmez; fixture ve mock transport kullanır.
 
-## Test kapsamı
-
-Paket, upstream `mlevent/fatura` testlerinden türetilen ve genişletilen parity testleri içerir:
-
-- invoice tax math
-- invoice total math
-- producer receipt total math
-- credential lifecycle
-- list/get/update/delete service akışları
-- self-employed receipt math
-- tevkifat / özel matrah / istisna senaryoları
-- sms / html / download / request akışları
-
-## Sürümleme yaklaşımı
-
-- `CHANGELOG.md` kullanıcıya dönük değişiklikleri özetler
-- parity bozan davranış değişiklikleri major/minor notuyla açık yazılmalıdır
-- upstream referansına yaklaşan düzeltmeler changelog’da özellikle belirtilmelidir
-
 ## Komutlar
 
 ```bash
