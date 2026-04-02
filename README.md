@@ -109,7 +109,13 @@ Bun ile yerel geliştirme sırasında:
 ## İstemci olarak kullanma
 
 ```ts
-import { GibClient, DocumentType, InvoiceModel, InvoiceItemModel, Unit } from "@rekl0w/fatura-kit";
+import {
+  GibClient,
+  DocumentType,
+  InvoiceModel,
+  InvoiceItemModel,
+  Unit,
+} from "@rekl0w/fatura-kit";
 
 const client = new GibClient({ documentType: DocumentType.Invoice });
 await client.setTestCredentials("33333310", "1");

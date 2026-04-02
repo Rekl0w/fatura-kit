@@ -8,7 +8,7 @@ export type ProducerReceiptItemFields = {
   malHizmet: string;
   miktar: number;
   birimFiyat: number;
-  birim?: typeof Unit[keyof typeof Unit];
+  birim?: (typeof Unit)[keyof typeof Unit];
   malHizmetTutari?: number;
   gvStopajOrani?: number;
 };
@@ -17,7 +17,7 @@ export class ProducerReceiptItemModel extends BaseItem {
   public malHizmet: string;
   public miktar: number;
   public birimFiyat: number;
-  public birim: typeof Unit[keyof typeof Unit];
+  public birim: (typeof Unit)[keyof typeof Unit];
   public malHizmetTutari: number;
   public gvStopajOrani: number;
 
@@ -31,32 +31,40 @@ export class ProducerReceiptItemModel extends BaseItem {
     this.gvStopajOrani = asNumber(fields.gvStopajOrani);
 
     if (!this.imported) {
-      this.malHizmetTutari = this.malHizmetTutari || this.miktar * this.birimFiyat;
+      this.malHizmetTutari =
+        this.malHizmetTutari || this.miktar * this.birimFiyat;
       this.addTax(TaxEnum.GVStopaj, this.gvStopajOrani);
     }
   }
 
-  public static import(data: Record<string, unknown>): ProducerReceiptItemModel {
-    const item = new ProducerReceiptItemModel({
-      malHizmet: asString(data.malHizmet),
-      miktar: asNumber(data.miktar),
-      birimFiyat: asNumber(data.birimFiyat),
-      birim: (data.birim as typeof Unit[keyof typeof Unit]) ?? Unit.Adet,
-      malHizmetTutari: asNumber(data.malHizmetTutari),
-      gvStopajOrani: asNumber(data.gvStopajOrani),
-    }, { imported: true, importSource: "model" });
-
-    item.importTaxes(data);
-    return item;
-  }
-
-  public static importFromApi(data: Record<string, unknown>): ProducerReceiptItemModel {
+  public static import(
+    data: Record<string, unknown>,
+  ): ProducerReceiptItemModel {
     const item = new ProducerReceiptItemModel(
       {
         malHizmet: asString(data.malHizmet),
         miktar: asNumber(data.miktar),
         birimFiyat: asNumber(data.birimFiyat),
-        birim: (data.birim as typeof Unit[keyof typeof Unit]) ?? Unit.Adet,
+        birim: (data.birim as (typeof Unit)[keyof typeof Unit]) ?? Unit.Adet,
+        malHizmetTutari: asNumber(data.malHizmetTutari),
+        gvStopajOrani: asNumber(data.gvStopajOrani),
+      },
+      { imported: true, importSource: "model" },
+    );
+
+    item.importTaxes(data);
+    return item;
+  }
+
+  public static importFromApi(
+    data: Record<string, unknown>,
+  ): ProducerReceiptItemModel {
+    const item = new ProducerReceiptItemModel(
+      {
+        malHizmet: asString(data.malHizmet),
+        miktar: asNumber(data.miktar),
+        birimFiyat: asNumber(data.birimFiyat),
+        birim: (data.birim as (typeof Unit)[keyof typeof Unit]) ?? Unit.Adet,
         malHizmetTutari: asNumber(data.malHizmetTutari),
         gvStopajOrani: asNumber(data.gvStopajOrani),
       },
@@ -71,7 +79,10 @@ export class ProducerReceiptItemModel extends BaseItem {
     const taxMap = new Map<string, { rate?: number; amount?: number }>();
 
     for (const [key, value] of Object.entries(data)) {
-      const normalized = key[0]?.toUpperCase() === "V" ? key : `${key[0]?.toUpperCase() ?? ""}${key.slice(1)}`;
+      const normalized =
+        key[0]?.toUpperCase() === "V"
+          ? key
+          : `${key[0]?.toUpperCase() ?? ""}${key.slice(1)}`;
       const match = normalized.match(/^V(.+?)(Orani|Tutari)$/);
       if (!match) continue;
       const [, code, kind] = match;
@@ -93,7 +104,14 @@ export class ProducerReceiptItemModel extends BaseItem {
     const resolvedAmount =
       amount ||
       (tax === TaxEnum.BorsaTescil
-        ? () => percentage(this.malHizmetTutari - this.totalTaxAmount((line) => line.model !== TaxEnum.BorsaTescil), rate)
+        ? () =>
+            percentage(
+              this.malHizmetTutari -
+                this.totalTaxAmount(
+                  (line) => line.model !== TaxEnum.BorsaTescil,
+                ),
+              rate,
+            )
         : percentage(this.malHizmetTutari, rate));
 
     this.setTax(tax, rate, resolvedAmount, 0);

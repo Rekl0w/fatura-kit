@@ -1,6 +1,22 @@
-import { InvoiceType, type Tax, Tax as TaxEnum, Unit, getInvoiceTypeReasons, getTaxCodes, getTaxRateByCode, taxFromCode, taxHasVat } from "../enums";
+import {
+  InvoiceType,
+  type Tax,
+  Tax as TaxEnum,
+  Unit,
+  getInvoiceTypeReasons,
+  getTaxCodes,
+  getTaxRateByCode,
+  taxFromCode,
+  taxHasVat,
+} from "../enums";
 import { FormatError, ValidationError } from "../errors";
-import { amountFormat, applyKeyMap, percentage, FormatValidator, mapWithAmountFormat } from "../utils";
+import {
+  amountFormat,
+  applyKeyMap,
+  percentage,
+  FormatValidator,
+  mapWithAmountFormat,
+} from "../utils";
 import { BaseItem } from "./base-item";
 import { asNumber, asString } from "./helpers";
 import type { ModelMeta } from "./types";
@@ -10,7 +26,7 @@ export type InvoiceItemFields = {
   miktar: number;
   birimFiyat: number;
   kdvOrani: number;
-  birim?: typeof Unit[keyof typeof Unit];
+  birim?: (typeof Unit)[keyof typeof Unit];
   fiyat?: number;
   iskontoTipi?: string;
   iskontoOrani?: number;
@@ -33,7 +49,7 @@ export class InvoiceItemModel extends BaseItem {
   public miktar: number;
   public birimFiyat: number;
   public kdvOrani: number;
-  public birim: typeof Unit[keyof typeof Unit];
+  public birim: (typeof Unit)[keyof typeof Unit];
   public fiyat: number;
   public iskontoTipi: string;
   public iskontoOrani: number;
@@ -85,30 +101,34 @@ export class InvoiceItemModel extends BaseItem {
             ? this.fiyat - this.iskontoTutari
             : this.fiyat + this.iskontoTutari;
       }
-      this.kdvTutari = this.kdvTutari || percentage(this.malHizmetTutari, this.kdvOrani);
+      this.kdvTutari =
+        this.kdvTutari || percentage(this.malHizmetTutari, this.kdvOrani);
     }
   }
 
   public static import(data: Record<string, unknown>): InvoiceItemModel {
     const mapped = applyKeyMap(data, keyMap, true);
-    const item = new InvoiceItemModel({
-      malHizmet: asString(mapped.malHizmet),
-      miktar: asNumber(mapped.miktar),
-      birimFiyat: asNumber(mapped.birimFiyat),
-      kdvOrani: asNumber(mapped.kdvOrani),
-      birim: (mapped.birim as typeof Unit[keyof typeof Unit]) ?? Unit.Adet,
-      fiyat: asNumber(mapped.fiyat),
-      iskontoTipi: asString(mapped.iskontoTipi, "İskonto"),
-      iskontoOrani: asNumber(mapped.iskontoOrani),
-      iskontoTutari: asNumber(mapped.iskontoTutari),
-      iskontoNedeni: asString(mapped.iskontoNedeni),
-      malHizmetTutari: asNumber(mapped.malHizmetTutari),
-      kdvTutari: asNumber(mapped.kdvTutari),
-      tevkifatKodu: asNumber(mapped.tevkifatKodu),
-      ozelMatrahNedeni: asNumber(mapped.ozelMatrahNedeni),
-      ozelMatrahTutari: asNumber(mapped.ozelMatrahTutari),
-      gtip: asString(mapped.gtip),
-    }, { imported: true, importSource: "model" });
+    const item = new InvoiceItemModel(
+      {
+        malHizmet: asString(mapped.malHizmet),
+        miktar: asNumber(mapped.miktar),
+        birimFiyat: asNumber(mapped.birimFiyat),
+        kdvOrani: asNumber(mapped.kdvOrani),
+        birim: (mapped.birim as (typeof Unit)[keyof typeof Unit]) ?? Unit.Adet,
+        fiyat: asNumber(mapped.fiyat),
+        iskontoTipi: asString(mapped.iskontoTipi, "İskonto"),
+        iskontoOrani: asNumber(mapped.iskontoOrani),
+        iskontoTutari: asNumber(mapped.iskontoTutari),
+        iskontoNedeni: asString(mapped.iskontoNedeni),
+        malHizmetTutari: asNumber(mapped.malHizmetTutari),
+        kdvTutari: asNumber(mapped.kdvTutari),
+        tevkifatKodu: asNumber(mapped.tevkifatKodu),
+        ozelMatrahNedeni: asNumber(mapped.ozelMatrahNedeni),
+        ozelMatrahTutari: asNumber(mapped.ozelMatrahTutari),
+        gtip: asString(mapped.gtip),
+      },
+      { imported: true, importSource: "model" },
+    );
 
     item.importTaxes(mapped);
     return item;
@@ -122,7 +142,7 @@ export class InvoiceItemModel extends BaseItem {
         miktar: asNumber(mapped.miktar),
         birimFiyat: asNumber(mapped.birimFiyat),
         kdvOrani: asNumber(mapped.kdvOrani),
-        birim: (mapped.birim as typeof Unit[keyof typeof Unit]) ?? Unit.Adet,
+        birim: (mapped.birim as (typeof Unit)[keyof typeof Unit]) ?? Unit.Adet,
         fiyat: asNumber(mapped.fiyat),
         iskontoTipi: asString(mapped.iskontoTipi, "İskonto"),
         iskontoOrani: asNumber(mapped.iskontoOrani),
@@ -143,10 +163,16 @@ export class InvoiceItemModel extends BaseItem {
   }
 
   private importTaxes(data: Record<string, unknown>): void {
-    const taxMap = new Map<string, { rate?: number; amount?: number; vat?: number }>();
+    const taxMap = new Map<
+      string,
+      { rate?: number; amount?: number; vat?: number }
+    >();
 
     for (const [key, value] of Object.entries(data)) {
-      const normalized = key[0]?.toUpperCase() === "V" ? key : `${key[0]?.toUpperCase() ?? ""}${key.slice(1)}`;
+      const normalized =
+        key[0]?.toUpperCase() === "V"
+          ? key
+          : `${key[0]?.toUpperCase() ?? ""}${key.slice(1)}`;
       const match = normalized.match(/^V(.+?)(Orani|Tutari|KdvTutari)$/);
       if (!match) continue;
       const [, code, kind] = match;
@@ -166,15 +192,25 @@ export class InvoiceItemModel extends BaseItem {
   }
 
   public addTax(tax: Tax, rate: number, amount = 0, vat = 0): this {
-    const resolvedAmount = amount ||
-      (tax === TaxEnum.KDVTevkifat ? () => percentage(this.kdvTutari, rate) : percentage(this.malHizmetTutari, rate));
+    const resolvedAmount =
+      amount ||
+      (tax === TaxEnum.KDVTevkifat
+        ? () => percentage(this.kdvTutari, rate)
+        : percentage(this.malHizmetTutari, rate));
 
     let amountValue = resolvedAmount;
-    if (tax === TaxEnum.OTV1ListeTevkifat && typeof amountValue !== "function") {
+    if (
+      tax === TaxEnum.OTV1ListeTevkifat &&
+      typeof amountValue !== "function"
+    ) {
       amountValue *= this.miktar;
     }
 
-    const vatValue = vat || (taxHasVat(tax) && typeof amountValue !== "function" ? percentage(amountValue, this.kdvOrani) : 0);
+    const vatValue =
+      vat ||
+      (taxHasVat(tax) && typeof amountValue !== "function"
+        ? percentage(amountValue, this.kdvOrani)
+        : 0);
     this.setTax(tax, rate, amountValue, vatValue);
     return this;
   }
@@ -184,7 +220,10 @@ export class InvoiceItemModel extends BaseItem {
 
     if (parent.faturaTipi === InvoiceType.Tevkifat && this.tevkifatKodu) {
       if (!getTaxCodes(TaxEnum.KDVTevkifat)[String(this.tevkifatKodu)]) {
-        throw new ValidationError("Geçerli bir Tevkifat Kodu belirtilmeli.", this);
+        throw new ValidationError(
+          "Geçerli bir Tevkifat Kodu belirtilmeli.",
+          this,
+        );
       }
       const rate = getTaxRateByCode(TaxEnum.KDVTevkifat, this.tevkifatKodu);
       if (rate !== false) {
@@ -193,13 +232,25 @@ export class InvoiceItemModel extends BaseItem {
     }
 
     if (parent.faturaTipi === InvoiceType.OzelMatrah && this.ozelMatrahNedeni) {
-      if (!getInvoiceTypeReasons(InvoiceType.OzelMatrah)[String(this.ozelMatrahNedeni)]) {
-        throw new ValidationError("Geçerli bir Özel Matrah nedeni belirtilmeli.", this);
+      if (
+        !getInvoiceTypeReasons(InvoiceType.OzelMatrah)[
+          String(this.ozelMatrahNedeni)
+        ]
+      ) {
+        throw new ValidationError(
+          "Geçerli bir Özel Matrah nedeni belirtilmeli.",
+          this,
+        );
       }
-      this.kdvTutari = percentage(this.ozelMatrahTutari, this.kdvOrani) + this.totalTaxVat();
+      this.kdvTutari =
+        percentage(this.ozelMatrahTutari, this.kdvOrani) + this.totalTaxVat();
     }
 
-    if (parent.faturaTipi === InvoiceType.Istisna && this.gtip && !FormatValidator.gtipCode(this.gtip)) {
+    if (
+      parent.faturaTipi === InvoiceType.Istisna &&
+      this.gtip &&
+      !FormatValidator.gtipCode(this.gtip)
+    ) {
       throw new FormatError("GTIP 12 hane olmak zorunda.", this);
     }
 

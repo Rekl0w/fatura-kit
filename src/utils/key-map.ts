@@ -4,7 +4,9 @@ export function applyKeyMap<T extends Record<string, unknown>>(
   reverse = false,
 ): Record<string, unknown> {
   const mapper = reverse
-    ? Object.fromEntries(Object.entries(keyMap).map(([left, right]) => [right, left]))
+    ? Object.fromEntries(
+        Object.entries(keyMap).map(([left, right]) => [right, left]),
+      )
     : keyMap;
 
   return Object.fromEntries(

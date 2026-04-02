@@ -1,5 +1,27 @@
-const ones = ["", "bir", "iki", "üç", "dört", "beş", "altı", "yedi", "sekiz", "dokuz"];
-const tens = ["", "on", "yirmi", "otuz", "kırk", "elli", "altmış", "yetmiş", "seksen", "doksan"];
+const ones = [
+  "",
+  "bir",
+  "iki",
+  "üç",
+  "dört",
+  "beş",
+  "altı",
+  "yedi",
+  "sekiz",
+  "dokuz",
+];
+const tens = [
+  "",
+  "on",
+  "yirmi",
+  "otuz",
+  "kırk",
+  "elli",
+  "altmış",
+  "yetmiş",
+  "seksen",
+  "doksan",
+];
 const scales = ["", "bin", "milyon", "milyar", "trilyon", "katrilyon"];
 
 function convertHundreds(num: number): string {
@@ -37,7 +59,9 @@ function convertInteger(num: number): string {
       if (scaleIndex === 1 && chunk === 1) {
         parts.unshift("bin");
       } else {
-        parts.unshift([chunkWords, scales[scaleIndex]].filter(Boolean).join(" "));
+        parts.unshift(
+          [chunkWords, scales[scaleIndex]].filter(Boolean).join(" "),
+        );
       }
     }
     remaining = Math.floor(remaining / 1000);

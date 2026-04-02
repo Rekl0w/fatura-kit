@@ -68,11 +68,17 @@ export abstract class BaseDocument<TItem extends ItemModel = ItemModel> {
     this.setItemsInternal(hydrated as TItem[], true);
   }
 
-  protected abstract itemFactory(data: Record<string, unknown>, source: ImportSource): TItem;
+  protected abstract itemFactory(
+    data: Record<string, unknown>,
+    source: ImportSource,
+  ): TItem;
   protected abstract calculateTotals(): void;
   protected abstract keyMap(): Record<string, string>;
 
-  protected keyMapper(data: Record<string, unknown>, reverse = false): Record<string, unknown> {
+  protected keyMapper(
+    data: Record<string, unknown>,
+    reverse = false,
+  ): Record<string, unknown> {
     return applyKeyMap(data, this.keyMap(), reverse);
   }
 
@@ -82,8 +88,9 @@ export abstract class BaseDocument<TItem extends ItemModel = ItemModel> {
     }
 
     if (this.importSource === "api" && !this.importedDirty) {
-      this.malHizmetListe = this.malHizmetListe.filter((item): item is TItem =>
-        typeof item === "object" && item !== null && "prepare" in item,
+      this.malHizmetListe = this.malHizmetListe.filter(
+        (item): item is TItem =>
+          typeof item === "object" && item !== null && "prepare" in item,
       );
       this.importedDirty = true;
     }
@@ -124,8 +131,16 @@ export abstract class BaseDocument<TItem extends ItemModel = ItemModel> {
     return taxes;
   }
 
-  public mapItems(fn: (self: this, item: TItem | Record<string, unknown>, index: number) => TItem | Record<string, unknown>): this {
-    this.malHizmetListe = this.malHizmetListe.map((item, index) => fn(this, item, index));
+  public mapItems(
+    fn: (
+      self: this,
+      item: TItem | Record<string, unknown>,
+      index: number,
+    ) => TItem | Record<string, unknown>,
+  ): this {
+    this.malHizmetListe = this.malHizmetListe.map((item, index) =>
+      fn(this, item, index),
+    );
     this.calculateTotals();
     return this;
   }
@@ -145,8 +160,12 @@ export abstract class BaseDocument<TItem extends ItemModel = ItemModel> {
   }
 
   public toArray(): Record<string, unknown> {
-    const { importSource: _importSource, imported: _imported, importedDirty: _importedDirty, ...rest } =
-      this as unknown as Record<string, unknown>;
+    const {
+      importSource: _importSource,
+      imported: _imported,
+      importedDirty: _importedDirty,
+      ...rest
+    } = this as unknown as Record<string, unknown>;
     return rest;
   }
 

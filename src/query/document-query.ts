@@ -39,7 +39,10 @@ export function applyDocumentQuery(
     result = result.filter((document) => {
       const value = document[key];
       return typeof value === "string"
-        ? value === expected || value.toLocaleLowerCase("tr-TR").includes(expected.toLocaleLowerCase("tr-TR"))
+        ? value === expected ||
+            value
+              .toLocaleLowerCase("tr-TR")
+              .includes(expected.toLocaleLowerCase("tr-TR"))
         : false;
     });
   }

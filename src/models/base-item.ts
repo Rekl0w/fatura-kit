@@ -1,8 +1,4 @@
-import {
-  type Tax,
-  getTaxCode,
-  taxHasVat,
-} from "../enums";
+import { type Tax, getTaxCode, taxHasVat } from "../enums";
 import { arrayColumnSum, amountFormat } from "../utils";
 import type { ModelMeta, TaxLine, TaxLineInternal } from "./types";
 
@@ -21,7 +17,12 @@ export abstract class BaseItem {
     return new this(fields);
   }
 
-  protected setTax(tax: Tax, rate: number, amount: number | (() => number), vat = 0): void {
+  protected setTax(
+    tax: Tax,
+    rate: number,
+    amount: number | (() => number),
+    vat = 0,
+  ): void {
     this.taxes[tax] = {
       model: tax,
       rate,
@@ -30,14 +31,20 @@ export abstract class BaseItem {
     };
   }
 
-  public addTaxFromArray(taxes: Array<[Tax, number, number?, number?]> = []): this {
+  public addTaxFromArray(
+    taxes: Array<[Tax, number, number?, number?]> = [],
+  ): this {
     for (const [tax, rate, amount = 0, vat = 0] of taxes) {
-      (this as unknown as { addTax: (tax: Tax, rate: number, amount?: number, vat?: number) => BaseItem }).addTax(
-        tax,
-        rate,
-        amount,
-        vat,
-      );
+      (
+        this as unknown as {
+          addTax: (
+            tax: Tax,
+            rate: number,
+            amount?: number,
+            vat?: number,
+          ) => BaseItem;
+        }
+      ).addTax(tax, rate, amount, vat);
     }
     return this;
   }
@@ -46,7 +53,10 @@ export abstract class BaseItem {
     return Object.values(this.taxes).map((tax) => ({
       model: tax.model,
       rate: tax.rate,
-      amount: typeof tax.amount === "function" ? amountFormat(tax.amount()) : amountFormat(tax.amount),
+      amount:
+        typeof tax.amount === "function"
+          ? amountFormat(tax.amount())
+          : amountFormat(tax.amount),
       vat: amountFormat(tax.vat),
     }));
   }
@@ -61,7 +71,10 @@ export abstract class BaseItem {
         key,
         {
           ...tax,
-          amount: typeof tax.amount === "function" ? amountFormat(tax.amount()) : amountFormat(tax.amount),
+          amount:
+            typeof tax.amount === "function"
+              ? amountFormat(tax.amount())
+              : amountFormat(tax.amount),
           vat: amountFormat(tax.vat),
         },
       ]),
@@ -82,7 +95,9 @@ export abstract class BaseItem {
       }
 
       for (const [field, key] of keys) {
-        const exportKey = lowerFirst ? `${key.slice(0, 1).toLowerCase()}${key.slice(1)}` : key;
+        const exportKey = lowerFirst
+          ? `${key.slice(0, 1).toLowerCase()}${key.slice(1)}`
+          : key;
         exported[exportKey] = tax[field] as number;
       }
     }
@@ -104,7 +119,10 @@ export abstract class BaseItem {
       .map((tax) => ({
         model: tax.model,
         rate: tax.rate,
-        amount: typeof tax.amount === "function" ? amountFormat(tax.amount()) : amountFormat(tax.amount),
+        amount:
+          typeof tax.amount === "function"
+            ? amountFormat(tax.amount())
+            : amountFormat(tax.amount),
         vat: amountFormat(tax.vat),
       }));
 
@@ -126,14 +144,20 @@ export abstract class BaseItem {
       .map((tax) => ({
         model: tax.model,
         rate: tax.rate,
-        amount: typeof tax.amount === "function" ? amountFormat(tax.amount()) : amountFormat(tax.amount),
+        amount:
+          typeof tax.amount === "function"
+            ? amountFormat(tax.amount())
+            : amountFormat(tax.amount),
         vat: amountFormat(tax.vat),
       }));
 
     return arrayColumnSum(values, "vat");
   }
 
-  public eachWith<T>(data: Iterable<T>, fn: (self: this, item: T, index: number) => void): this {
+  public eachWith<T>(
+    data: Iterable<T>,
+    fn: (self: this, item: T, index: number) => void,
+  ): this {
     let index = 0;
     for (const item of data) {
       fn(this, item, index);
@@ -157,7 +181,11 @@ export abstract class BaseItem {
   }
 
   public toArray(): Record<string, unknown> {
-    const { imported: _imported, taxes: _taxes, ...rest } = this as unknown as Record<string, unknown>;
+    const {
+      imported: _imported,
+      taxes: _taxes,
+      ...rest
+    } = this as unknown as Record<string, unknown>;
     return rest;
   }
 

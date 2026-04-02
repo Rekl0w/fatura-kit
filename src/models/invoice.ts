@@ -1,6 +1,17 @@
-import { Currency, InvoiceType, Type, taxIsStoppage, taxIsWithholding } from "../enums";
+import {
+  Currency,
+  InvoiceType,
+  Type,
+  taxIsStoppage,
+  taxIsWithholding,
+} from "../enums";
 import { ValidationError } from "../errors";
-import { amountFormat, arrayColumnSumWithAmountFormat, applyKeyMap, mapWithAmountFormat } from "../utils";
+import {
+  amountFormat,
+  arrayColumnSumWithAmountFormat,
+  applyKeyMap,
+  mapWithAmountFormat,
+} from "../utils";
 import { BaseDocument } from "./base-document";
 import { asArray, asNumber, asString } from "./helpers";
 import { InvoiceItemModel, type InvoiceItemFields } from "./invoice-item";
@@ -9,14 +20,14 @@ import type { ModelMeta } from "./types";
 
 export type InvoiceModelFields = {
   vknTckn: string;
-  hangiTip?: typeof Type[keyof typeof Type];
+  hangiTip?: (typeof Type)[keyof typeof Type];
   uuid?: string;
   belgeNumarasi?: string;
   tarih?: string;
   saat?: string;
-  paraBirimi?: typeof Currency[keyof typeof Currency];
+  paraBirimi?: (typeof Currency)[keyof typeof Currency];
   dovizKuru?: number;
-  faturaTipi?: typeof InvoiceType[keyof typeof InvoiceType];
+  faturaTipi?: (typeof InvoiceType)[keyof typeof InvoiceType];
   siparisNumarasi?: string;
   siparisTarihi?: string;
   irsaliyeNumarasi?: string;
@@ -70,11 +81,11 @@ const keyMap = {
 
 export class InvoiceModel extends BaseDocument<InvoiceItemModel> {
   public vknTckn: string;
-  public hangiTip: typeof Type[keyof typeof Type];
+  public hangiTip: (typeof Type)[keyof typeof Type];
   public belgeNumarasi: string;
-  public paraBirimi: typeof Currency[keyof typeof Currency];
+  public paraBirimi: (typeof Currency)[keyof typeof Currency];
   public dovizKuru: number;
-  public faturaTipi: typeof InvoiceType[keyof typeof InvoiceType];
+  public faturaTipi: (typeof InvoiceType)[keyof typeof InvoiceType];
   public siparisNumarasi: string;
   public siparisTarihi: string;
   public irsaliyeNumarasi: string;
@@ -170,10 +181,12 @@ export class InvoiceModel extends BaseDocument<InvoiceItemModel> {
     this.initializeBase();
 
     if (this.iadeListe.length && this.faturaTipi === InvoiceType.Iade) {
-      this.iadeListe = this.iadeListe.map((item) => new InvoiceReturnItem({
-        faturaNo: asString(item.faturaNo),
-        duzenlenmeTarihi: asString(item.duzenlenmeTarihi),
-      }).toArray());
+      this.iadeListe = this.iadeListe.map((item) =>
+        new InvoiceReturnItem({
+          faturaNo: asString(item.faturaNo),
+          duzenlenmeTarihi: asString(item.duzenlenmeTarihi),
+        }).toArray(),
+      );
     }
   }
 
@@ -183,69 +196,92 @@ export class InvoiceModel extends BaseDocument<InvoiceItemModel> {
 
   public static import(data: Record<string, unknown>): InvoiceModel {
     const mapped = applyKeyMap(data, keyMap, true);
-    return new InvoiceModel({
-      vknTckn: asString(mapped.vknTckn),
-      hangiTip: (mapped.hangiTip as typeof Type[keyof typeof Type]) ?? Type.eArsivFatura,
-      uuid: asString(mapped.uuid),
-      belgeNumarasi: asString(mapped.belgeNumarasi),
-      tarih: asString(mapped.tarih),
-      saat: asString(mapped.saat),
-      paraBirimi: (mapped.paraBirimi as typeof Currency[keyof typeof Currency]) ?? Currency.TRY,
-      dovizKuru: asNumber(mapped.dovizKuru),
-      faturaTipi: (mapped.faturaTipi as typeof InvoiceType[keyof typeof InvoiceType]) ?? InvoiceType.Satis,
-      siparisNumarasi: asString(mapped.siparisNumarasi),
-      siparisTarihi: asString(mapped.siparisTarihi),
-      irsaliyeNumarasi: asString(mapped.irsaliyeNumarasi),
-      irsaliyeTarihi: asString(mapped.irsaliyeTarihi),
-      fisNo: asString(mapped.fisNo),
-      fisTarihi: asString(mapped.fisTarihi),
-      fisSaati: asString(mapped.fisSaati),
-      fisTipi: asString(mapped.fisTipi),
-      zRaporNo: asString(mapped.zRaporNo),
-      okcSeriNo: asString(mapped.okcSeriNo),
-      aliciUnvan: asString(mapped.aliciUnvan),
-      aliciAdi: asString(mapped.aliciAdi),
-      aliciSoyadi: asString(mapped.aliciSoyadi),
-      adres: asString(mapped.adres),
-      binaAdi: asString(mapped.binaAdi),
-      binaNo: asString(mapped.binaNo),
-      kapiNo: asString(mapped.kapiNo),
-      kasabaKoy: asString(mapped.kasabaKoy),
-      mahalleSemtIlce: asString(mapped.mahalleSemtIlce),
-      sehir: asString(mapped.sehir),
-      ulke: asString(mapped.ulke),
-      postaKodu: asString(mapped.postaKodu),
-      tel: asString(mapped.tel),
-      fax: asString(mapped.fax),
-      eposta: asString(mapped.eposta),
-      websitesi: asString(mapped.websitesi),
-      vergiDairesi: asString(mapped.vergiDairesi),
-      iadeListe: asArray(mapped.iadeListe),
-      malHizmetListe: asArray(mapped.malHizmetListe),
-      not: asString(mapped.not),
-      matrah: asNumber(mapped.matrah),
-      malHizmetToplamTutari: asNumber(mapped.malHizmetToplamTutari),
-      toplamIskonto: asNumber(mapped.toplamIskonto),
-      hesaplananKdv: asNumber(mapped.hesaplananKdv),
-      vergilerToplami: asNumber(mapped.vergilerToplami),
-      vergilerDahilToplamTutar: asNumber(mapped.vergilerDahilToplamTutar),
-      toplamMasraflar: asNumber(mapped.toplamMasraflar),
-      odenecekTutar: asNumber(mapped.odenecekTutar),
-    }, { imported: true, importSource: "model" });
+    return new InvoiceModel(
+      {
+        vknTckn: asString(mapped.vknTckn),
+        hangiTip:
+          (mapped.hangiTip as (typeof Type)[keyof typeof Type]) ??
+          Type.eArsivFatura,
+        uuid: asString(mapped.uuid),
+        belgeNumarasi: asString(mapped.belgeNumarasi),
+        tarih: asString(mapped.tarih),
+        saat: asString(mapped.saat),
+        paraBirimi:
+          (mapped.paraBirimi as (typeof Currency)[keyof typeof Currency]) ??
+          Currency.TRY,
+        dovizKuru: asNumber(mapped.dovizKuru),
+        faturaTipi:
+          (mapped.faturaTipi as (typeof InvoiceType)[keyof typeof InvoiceType]) ??
+          InvoiceType.Satis,
+        siparisNumarasi: asString(mapped.siparisNumarasi),
+        siparisTarihi: asString(mapped.siparisTarihi),
+        irsaliyeNumarasi: asString(mapped.irsaliyeNumarasi),
+        irsaliyeTarihi: asString(mapped.irsaliyeTarihi),
+        fisNo: asString(mapped.fisNo),
+        fisTarihi: asString(mapped.fisTarihi),
+        fisSaati: asString(mapped.fisSaati),
+        fisTipi: asString(mapped.fisTipi),
+        zRaporNo: asString(mapped.zRaporNo),
+        okcSeriNo: asString(mapped.okcSeriNo),
+        aliciUnvan: asString(mapped.aliciUnvan),
+        aliciAdi: asString(mapped.aliciAdi),
+        aliciSoyadi: asString(mapped.aliciSoyadi),
+        adres: asString(mapped.adres),
+        binaAdi: asString(mapped.binaAdi),
+        binaNo: asString(mapped.binaNo),
+        kapiNo: asString(mapped.kapiNo),
+        kasabaKoy: asString(mapped.kasabaKoy),
+        mahalleSemtIlce: asString(mapped.mahalleSemtIlce),
+        sehir: asString(mapped.sehir),
+        ulke: asString(mapped.ulke),
+        postaKodu: asString(mapped.postaKodu),
+        tel: asString(mapped.tel),
+        fax: asString(mapped.fax),
+        eposta: asString(mapped.eposta),
+        websitesi: asString(mapped.websitesi),
+        vergiDairesi: asString(mapped.vergiDairesi),
+        iadeListe: asArray(mapped.iadeListe),
+        malHizmetListe: asArray(mapped.malHizmetListe),
+        not: asString(mapped.not),
+        matrah: asNumber(mapped.matrah),
+        malHizmetToplamTutari: asNumber(mapped.malHizmetToplamTutari),
+        toplamIskonto: asNumber(mapped.toplamIskonto),
+        hesaplananKdv: asNumber(mapped.hesaplananKdv),
+        vergilerToplami: asNumber(mapped.vergilerToplami),
+        vergilerDahilToplamTutar: asNumber(mapped.vergilerDahilToplamTutar),
+        toplamMasraflar: asNumber(mapped.toplamMasraflar),
+        odenecekTutar: asNumber(mapped.odenecekTutar),
+      },
+      { imported: true, importSource: "model" },
+    );
   }
 
   public static importFromApi(data: Record<string, unknown>): InvoiceModel {
     const mapped = applyKeyMap(data, keyMap, true);
-    return new InvoiceModel({
-      ...(mapped as InvoiceModelFields),
-      paraBirimi: (mapped.paraBirimi as typeof Currency[keyof typeof Currency]) ?? Currency.TRY,
-      hangiTip: (mapped.hangiTip as typeof Type[keyof typeof Type]) ?? Type.eArsivFatura,
-      faturaTipi: (mapped.faturaTipi as typeof InvoiceType[keyof typeof InvoiceType]) ?? InvoiceType.Satis,
-    }, { imported: true, importSource: "api" });
+    return new InvoiceModel(
+      {
+        ...(mapped as InvoiceModelFields),
+        paraBirimi:
+          (mapped.paraBirimi as (typeof Currency)[keyof typeof Currency]) ??
+          Currency.TRY,
+        hangiTip:
+          (mapped.hangiTip as (typeof Type)[keyof typeof Type]) ??
+          Type.eArsivFatura,
+        faturaTipi:
+          (mapped.faturaTipi as (typeof InvoiceType)[keyof typeof InvoiceType]) ??
+          InvoiceType.Satis,
+      },
+      { imported: true, importSource: "api" },
+    );
   }
 
-  protected itemFactory(data: Record<string, unknown>, source: "fresh" | "model" | "api"): InvoiceItemModel {
-    return source === "model" ? InvoiceItemModel.import(data) : new InvoiceItemModel(data as InvoiceItemFields);
+  protected itemFactory(
+    data: Record<string, unknown>,
+    source: "fresh" | "model" | "api",
+  ): InvoiceItemModel {
+    return source === "model"
+      ? InvoiceItemModel.import(data)
+      : new InvoiceItemModel(data as InvoiceItemFields);
   }
 
   protected keyMap(): Record<string, string> {
@@ -276,12 +312,24 @@ export class InvoiceModel extends BaseDocument<InvoiceItemModel> {
     this.matrah = arrayColumnSumWithAmountFormat(items, "malHizmetTutari");
     this.hesaplananKdv = arrayColumnSumWithAmountFormat(items, "kdvTutari");
     this.toplamIskonto = Math.abs(
-      arrayColumnSumWithAmountFormat(items, "iskontoTutari", (item) => item.iskontoTipi === "İskonto") -
-        arrayColumnSumWithAmountFormat(items, "iskontoTutari", (item) => item.iskontoTipi === "Arttırım"),
+      arrayColumnSumWithAmountFormat(
+        items,
+        "iskontoTutari",
+        (item) => item.iskontoTipi === "İskonto",
+      ) -
+        arrayColumnSumWithAmountFormat(
+          items,
+          "iskontoTutari",
+          (item) => item.iskontoTipi === "Arttırım",
+        ),
     );
     this.vergilerToplami =
       this.hesaplananKdv +
-      arrayColumnSumWithAmountFormat(this.getTaxes(), "amount", (tax) => !taxIsStoppage(tax.model));
+      arrayColumnSumWithAmountFormat(
+        this.getTaxes(),
+        "amount",
+        (tax) => !taxIsStoppage(tax.model),
+      );
     this.vergilerDahilToplamTutar = this.matrah + this.vergilerToplami;
     this.odenecekTutar =
       this.vergilerDahilToplamTutar -

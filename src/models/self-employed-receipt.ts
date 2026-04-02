@@ -1,9 +1,16 @@
 import { Currency } from "../enums";
 import { ValidationError } from "../errors";
-import { arrayColumnSumWithAmountFormat, applyKeyMap, mapWithAmountFormat } from "../utils";
+import {
+  arrayColumnSumWithAmountFormat,
+  applyKeyMap,
+  mapWithAmountFormat,
+} from "../utils";
 import { BaseDocument } from "./base-document";
 import { asArray, asBoolean, asNumber, asString } from "./helpers";
-import { SelfEmployedReceiptItemModel, type SelfEmployedReceiptItemFields } from "./self-employed-receipt-item";
+import {
+  SelfEmployedReceiptItemModel,
+  type SelfEmployedReceiptItemFields,
+} from "./self-employed-receipt-item";
 import type { ModelMeta } from "./types";
 
 export type SelfEmployedReceiptModelFields = {
@@ -12,7 +19,7 @@ export type SelfEmployedReceiptModelFields = {
   belgeNumarasi?: string;
   tarih?: string;
   saat?: string;
-  paraBirimi?: typeof Currency[keyof typeof Currency];
+  paraBirimi?: (typeof Currency)[keyof typeof Currency];
   dovizKuru?: number;
   aliciUnvan?: string;
   aliciAdi?: string;
@@ -59,7 +66,7 @@ const keyMap = {
 export class SelfEmployedReceiptModel extends BaseDocument<SelfEmployedReceiptItemModel> {
   public vknTckn: string;
   public belgeNumarasi: string;
-  public paraBirimi: typeof Currency[keyof typeof Currency];
+  public paraBirimi: (typeof Currency)[keyof typeof Currency];
   public dovizKuru: number;
   public aliciUnvan: string;
   public aliciAdi: string;
@@ -126,27 +133,42 @@ export class SelfEmployedReceiptModel extends BaseDocument<SelfEmployedReceiptIt
     this.initializeBase();
   }
 
-  public static create(fields: SelfEmployedReceiptModelFields): SelfEmployedReceiptModel {
+  public static create(
+    fields: SelfEmployedReceiptModelFields,
+  ): SelfEmployedReceiptModel {
     return new SelfEmployedReceiptModel(fields);
   }
 
-  public static import(data: Record<string, unknown>): SelfEmployedReceiptModel {
+  public static import(
+    data: Record<string, unknown>,
+  ): SelfEmployedReceiptModel {
     const mapped = applyKeyMap(data, keyMap, true);
-    return new SelfEmployedReceiptModel(mapped as SelfEmployedReceiptModelFields, {
-      imported: true,
-      importSource: "model",
-    });
+    return new SelfEmployedReceiptModel(
+      mapped as SelfEmployedReceiptModelFields,
+      {
+        imported: true,
+        importSource: "model",
+      },
+    );
   }
 
-  public static importFromApi(data: Record<string, unknown>): SelfEmployedReceiptModel {
+  public static importFromApi(
+    data: Record<string, unknown>,
+  ): SelfEmployedReceiptModel {
     const mapped = applyKeyMap(data, keyMap, true);
-    return new SelfEmployedReceiptModel(mapped as SelfEmployedReceiptModelFields, {
-      imported: true,
-      importSource: "api",
-    });
+    return new SelfEmployedReceiptModel(
+      mapped as SelfEmployedReceiptModelFields,
+      {
+        imported: true,
+        importSource: "api",
+      },
+    );
   }
 
-  protected itemFactory(data: Record<string, unknown>, source: "fresh" | "model" | "api"): SelfEmployedReceiptItemModel {
+  protected itemFactory(
+    data: Record<string, unknown>,
+    source: "fresh" | "model" | "api",
+  ): SelfEmployedReceiptItemModel {
     return source === "model"
       ? SelfEmployedReceiptItemModel.import(data)
       : new SelfEmployedReceiptItemModel(data as SelfEmployedReceiptItemFields);
@@ -164,10 +186,16 @@ export class SelfEmployedReceiptModel extends BaseDocument<SelfEmployedReceiptIt
   protected calculateTotals(): void {
     const items = this.getItems(false) as SelfEmployedReceiptItemModel[];
     this.brutUcret = arrayColumnSumWithAmountFormat(items, "brutUcret");
-    this.gvStopajTutari = arrayColumnSumWithAmountFormat(items, "gvStopajTutari");
+    this.gvStopajTutari = arrayColumnSumWithAmountFormat(
+      items,
+      "gvStopajTutari",
+    );
     this.netUcretTutari = arrayColumnSumWithAmountFormat(items, "netUcret");
     this.kdvTutari = arrayColumnSumWithAmountFormat(items, "kdvTutari");
-    this.kdvTevkifatTutari = arrayColumnSumWithAmountFormat(items, "kdvTevkifatTutari");
+    this.kdvTevkifatTutari = arrayColumnSumWithAmountFormat(
+      items,
+      "kdvTevkifatTutari",
+    );
     this.netAlinanToplam = arrayColumnSumWithAmountFormat(items, "netAlinan");
     this.tahsilEdilenKdv = this.kdvTutari - this.kdvTevkifatTutari;
   }

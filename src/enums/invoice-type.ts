@@ -43,6 +43,8 @@ export function getInvoiceTypeAlias(value: InvoiceType): string {
   return invoiceTypeAliases[value];
 }
 
-export function getInvoiceTypeReasons(value: InvoiceType): Record<string, string> {
+export function getInvoiceTypeReasons(
+  value: InvoiceType,
+): Record<string, string> {
   return value === InvoiceType.OzelMatrah ? { ...ozelMatrahReasons } : {};
 }

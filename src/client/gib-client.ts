@@ -4,7 +4,11 @@ import { DocumentType, ObjectionMethod, Type } from "../enums";
 import { ApiError, FormatError, ValidationError } from "../errors";
 import type { Exportable } from "../models";
 import { UserDataModel } from "../models";
-import { applyDocumentQuery, createInitialQueryState, type QueryState } from "../query/document-query";
+import {
+  applyDocumentQuery,
+  createInitialQueryState,
+  type QueryState,
+} from "../query/document-query";
 import { curdate, FormatValidator } from "../utils";
 import { PortalHttpClient, type HttpTransport } from "./portal-http-client";
 
@@ -21,8 +25,15 @@ const API = {
   },
 } as const;
 
-function isExportableModel(data: unknown): data is Exportable<Record<string, unknown>> & { getUuid(): string } {
-  return typeof data === "object" && data !== null && "export" in data && "getUuid" in data;
+function isExportableModel(
+  data: unknown,
+): data is Exportable<Record<string, unknown>> & { getUuid(): string } {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "export" in data &&
+    "getUuid" in data
+  );
 }
 
 export type GibClientOptions = {
@@ -59,35 +70,55 @@ export class GibClient {
     return this;
   }
 
-  public setDocumentType(documentType: (typeof DocumentType)[keyof typeof DocumentType]): this {
+  public setDocumentType(
+    documentType: (typeof DocumentType)[keyof typeof DocumentType],
+  ): this {
     this.documentType = documentType;
     return this;
   }
 
-  public setCredentials(username: string | null = null, password: string | null = null): this {
+  public setCredentials(
+    username: string | null = null,
+    password: string | null = null,
+  ): this {
     this.username = username;
     this.password = password;
     return this;
   }
 
-  public getCredentials(): { username: string | null; password: string | null } {
+  public getCredentials(): {
+    username: string | null;
+    password: string | null;
+  } {
     return { username: this.username, password: this.password };
   }
 
-  public async setTestCredentials(username?: string, password?: string): Promise<this> {
+  public async setTestCredentials(
+    username?: string,
+    password?: string,
+  ): Promise<this> {
     if (username && password) {
       return this.testMode().setCredentials(username, password);
     }
 
     const credentials = await this.getTestCredentials();
-    return this.testMode().setCredentials(credentials.username, credentials.password);
+    return this.testMode().setCredentials(
+      credentials.username,
+      credentials.password,
+    );
   }
 
-  public async getTestCredentials(): Promise<{ username: string; password: string }> {
-    const response = (await this.client.requestJson<Record<string, unknown>>(this.getGateway("esign"), {
-      assoscmd: "kullaniciOner",
-      rtype: "json",
-    })) as Record<string, unknown>;
+  public async getTestCredentials(): Promise<{
+    username: string;
+    password: string;
+  }> {
+    const response = (await this.client.requestJson<Record<string, unknown>>(
+      this.getGateway("esign"),
+      {
+        assoscmd: "kullaniciOner",
+        rtype: "json",
+      },
+    )) as Record<string, unknown>;
 
     if (typeof response.userid !== "string" || !response.userid) {
       throw new ApiError("Şu anda sistemdeki tüm test hesapları kullanılıyor.");
@@ -120,13 +151,16 @@ export class GibClient {
       this.setCredentials(username, password);
     }
 
-    const response = await this.client.requestJson<Record<string, unknown>>(this.getGateway("login"), {
-      assoscmd: this.testModeValue ? "login" : "anologin",
-      userid: this.username ?? "",
-      sifre: this.password ?? "",
-      sifre2: this.password ?? "",
-      parola: this.password ?? "",
-    });
+    const response = await this.client.requestJson<Record<string, unknown>>(
+      this.getGateway("login"),
+      {
+        assoscmd: this.testModeValue ? "login" : "anologin",
+        userid: this.username ?? "",
+        sifre: this.password ?? "",
+        sifre2: this.password ?? "",
+        parola: this.password ?? "",
+      },
+    );
 
     if (typeof response.token !== "string") {
       throw new ApiError("Token alınamadı.", this.getCredentials(), response);
@@ -147,26 +181,45 @@ export class GibClient {
     return true;
   }
 
-  public async getRecipientData(taxOrTrId: string): Promise<Record<string, unknown>> {
-    const response = await this.dispatch("SICIL_VEYA_MERNISTEN_BILGILERI_GETIR", "RG_BASITFATURA", {
-      vknTcknn: taxOrTrId,
-    });
+  public async getRecipientData(
+    taxOrTrId: string,
+  ): Promise<Record<string, unknown>> {
+    const response = await this.dispatch(
+      "SICIL_VEYA_MERNISTEN_BILGILERI_GETIR",
+      "RG_BASITFATURA",
+      {
+        vknTcknn: taxOrTrId,
+      },
+    );
     return (response.data ?? {}) as Record<string, unknown>;
   }
 
   public async getUserData(): Promise<Record<string, unknown>> {
-    const response = await this.dispatch("EARSIV_PORTAL_KULLANICI_BILGILERI_GETIR", "RG_KULLANICI");
+    const response = await this.dispatch(
+      "EARSIV_PORTAL_KULLANICI_BILGILERI_GETIR",
+      "RG_KULLANICI",
+    );
     return (response.data ?? {}) as Record<string, unknown>;
   }
 
-  public async updateUserData(userData: UserDataModel | Record<string, unknown>): Promise<boolean> {
-    const payload = userData instanceof UserDataModel ? userData.export() : userData;
-    const response = await this.dispatch("EARSIV_PORTAL_KULLANICI_BILGILERI_KAYDET", "RG_KULLANICI", payload);
+  public async updateUserData(
+    userData: UserDataModel | Record<string, unknown>,
+  ): Promise<boolean> {
+    const payload =
+      userData instanceof UserDataModel ? userData.export() : userData;
+    const response = await this.dispatch(
+      "EARSIV_PORTAL_KULLANICI_BILGILERI_KAYDET",
+      "RG_KULLANICI",
+      payload,
+    );
     return Boolean(response.data);
   }
 
   public async getPhoneNumber(): Promise<string | null> {
-    const response = await this.dispatch("EARSIV_PORTAL_TELEFONNO_SORGULA", "RG_BASITTASLAKLAR");
+    const response = await this.dispatch(
+      "EARSIV_PORTAL_TELEFONNO_SORGULA",
+      "RG_BASITTASLAKLAR",
+    );
     const data = response.data as Record<string, unknown> | undefined;
     return typeof data?.telefon === "string" ? data.telefon : null;
   }
@@ -175,17 +228,25 @@ export class GibClient {
     const phoneNumber = await this.getPhoneNumber();
     if (!phoneNumber) return null;
 
-    const response = await this.dispatch("EARSIV_PORTAL_SMSSIFRE_GONDER", "RG_SMSONAY", {
-      CEPTEL: phoneNumber,
-      KCEPTEL: false,
-      TIP: "",
-    });
+    const response = await this.dispatch(
+      "EARSIV_PORTAL_SMSSIFRE_GONDER",
+      "RG_SMSONAY",
+      {
+        CEPTEL: phoneNumber,
+        KCEPTEL: false,
+        TIP: "",
+      },
+    );
 
     const data = response.data as Record<string, unknown> | undefined;
     return typeof data?.oid === "string" ? data.oid : null;
   }
 
-  public async completeSmsVerification(code: string, oid: string, documents: string[]): Promise<boolean> {
+  public async completeSmsVerification(
+    code: string,
+    oid: string,
+    documents: string[],
+  ): Promise<boolean> {
     const setToSign = (this.setUuid(documents) as string[]).map((uuid) => ({
       belgeTuru: this.documentType,
       ettn: uuid,
@@ -206,7 +267,9 @@ export class GibClient {
     return false;
   }
 
-  public async createDraft(data: Exportable<Record<string, unknown>> | Record<string, unknown>): Promise<boolean> {
+  public async createDraft(
+    data: Exportable<Record<string, unknown>> | Record<string, unknown>,
+  ): Promise<boolean> {
     let payload = data as Record<string, unknown>;
     if (isExportableModel(data)) {
       this.lastIdValue = data.getUuid();
@@ -220,7 +283,11 @@ export class GibClient {
           ? ["EARSIV_PORTAL_MUSTAHSIL_OLUSTUR", "RG_MUSTAHSIL"]
           : ["EARSIV_PORTAL_SERBEST_MESLEK_MAKBUZU_OLUSTUR", "RG_SERBEST"];
 
-    const response = await this.dispatch(requestPath[0], requestPath[1], payload);
+    const response = await this.dispatch(
+      requestPath[0],
+      requestPath[1],
+      payload,
+    );
     const message = String(response.data ?? "");
     if (!message.includes("başarıyla")) {
       throw new ApiError(message, payload, response);
@@ -228,16 +295,23 @@ export class GibClient {
     return true;
   }
 
-  public async deleteDraft(documents: string[], reason = "Hatalı İşlem"): Promise<boolean> {
+  public async deleteDraft(
+    documents: string[],
+    reason = "Hatalı İşlem",
+  ): Promise<boolean> {
     const setToDelete = (this.setUuid(documents) as string[]).map((uuid) => ({
       belgeTuru: this.documentType,
       ettn: uuid,
     }));
 
-    const response = await this.dispatch("EARSIV_PORTAL_FATURA_SIL", "RG_TASLAKLAR", {
-      silinecekler: setToDelete,
-      aciklama: reason,
-    });
+    const response = await this.dispatch(
+      "EARSIV_PORTAL_FATURA_SIL",
+      "RG_TASLAKLAR",
+      {
+        silinecekler: setToDelete,
+        aciklama: reason,
+      },
+    );
 
     const match = String(response.data ?? "").match(/(\d+)/);
     if (match) {
@@ -263,15 +337,26 @@ export class GibClient {
   }
 
   public async getLastDocument(): Promise<Record<string, unknown>> {
-    const documents = (await this.onlyCurrent().setLimit(1).sortDesc().getAll(curdate("d/m/Y", "-1 year"), curdate("d/m/Y"))) as Array<Record<string, unknown>>;
-    return documents.length ? this.getDocument(String(documents[0]?.ettn ?? "")) : {};
+    const documents = (await this.onlyCurrent()
+      .setLimit(1)
+      .sortDesc()
+      .getAll(curdate("d/m/Y", "-1 year"), curdate("d/m/Y"))) as Array<
+      Record<string, unknown>
+    >;
+    return documents.length
+      ? this.getDocument(String(documents[0]?.ettn ?? ""))
+      : {};
   }
 
   public async getHtml(uuid: string, signed = true): Promise<unknown> {
-    const response = await this.dispatch("EARSIV_PORTAL_FATURA_GOSTER", "RG_TASLAKLAR", {
-      ettn: this.setUuid(uuid),
-      onayDurumu: signed ? "Onaylandı" : "Onaylanmadı",
-    });
+    const response = await this.dispatch(
+      "EARSIV_PORTAL_FATURA_GOSTER",
+      "RG_TASLAKLAR",
+      {
+        ettn: this.setUuid(uuid),
+        onayDurumu: signed ? "Onaylandı" : "Onaylanmadı",
+      },
+    );
     return response.data;
   }
 
@@ -286,7 +371,11 @@ export class GibClient {
     return `${this.getGateway("download")}?${params.toString()}`;
   }
 
-  public async saveToDisk(uuid: string, dirName = ".", fileName?: string): Promise<string> {
+  public async saveToDisk(
+    uuid: string,
+    dirName = ".",
+    fileName?: string,
+  ): Promise<string> {
     let saveDir: string;
     try {
       const targetDir = resolve(dirName ?? ".");
@@ -306,13 +395,20 @@ export class GibClient {
     return savePath;
   }
 
-  public async cancellationRequest(uuid: string, explanation: string): Promise<string> {
-    const response = await this.dispatch("EARSIV_PORTAL_IPTAL_TALEBI_OLUSTUR", "RG_TASLAKLAR", {
-      ettn: this.setUuid(uuid),
-      onayDurumu: "Onaylandı",
-      belgeTuru: this.documentType,
-      talepAciklama: explanation,
-    });
+  public async cancellationRequest(
+    uuid: string,
+    explanation: string,
+  ): Promise<string> {
+    const response = await this.dispatch(
+      "EARSIV_PORTAL_IPTAL_TALEBI_OLUSTUR",
+      "RG_TASLAKLAR",
+      {
+        ettn: this.setUuid(uuid),
+        onayDurumu: "Onaylandı",
+        belgeTuru: this.documentType,
+        talepAciklama: explanation,
+      },
+    );
     return String(response.data ?? "");
   }
 
@@ -323,45 +419,72 @@ export class GibClient {
     documentDate: string,
     explanation: string,
   ): Promise<string> {
-    const response = await this.dispatch("EARSIV_PORTAL_ITIRAZ_TALEBI_OLUSTUR", "RG_TASLAKLAR", {
-      ettn: this.setUuid(uuid),
-      onayDurumu: "Onaylandı",
-      belgeTuru: this.documentType,
-      itirazYontemi: objectionMethod,
-      referansBelgeId: documentId,
-      referansBelgeTarihi: documentDate,
-      talepAciklama: explanation,
-    });
+    const response = await this.dispatch(
+      "EARSIV_PORTAL_ITIRAZ_TALEBI_OLUSTUR",
+      "RG_TASLAKLAR",
+      {
+        ettn: this.setUuid(uuid),
+        onayDurumu: "Onaylandı",
+        belgeTuru: this.documentType,
+        itirazYontemi: objectionMethod,
+        referansBelgeId: documentId,
+        referansBelgeTarihi: documentDate,
+        talepAciklama: explanation,
+      },
+    );
     return String(response.data ?? "");
   }
 
-  public async getRequests(startDate: string, endDate: string): Promise<unknown[]> {
+  public async getRequests(
+    startDate: string,
+    endDate: string,
+  ): Promise<unknown[]> {
     this.assertDateRange(startDate, endDate);
-    const response = await this.dispatch("EARSIV_PORTAL_GELEN_IPTAL_ITIRAZ_TALEPLERINI_GETIR", "RG_IPTALITIRAZTASLAKLAR", {
-      baslangic: startDate,
-      bitis: endDate,
-    });
+    const response = await this.dispatch(
+      "EARSIV_PORTAL_GELEN_IPTAL_ITIRAZ_TALEPLERINI_GETIR",
+      "RG_IPTALITIRAZTASLAKLAR",
+      {
+        baslangic: startDate,
+        bitis: endDate,
+      },
+    );
     return (response.data ?? []) as unknown[];
   }
 
   public async getAll(startDate: string, endDate: string): Promise<unknown> {
     this.assertDateRange(startDate, endDate);
-    const response = await this.dispatch("EARSIV_PORTAL_TASLAKLARI_GETIR", "RG_TASLAKLAR", {
-      baslangic: startDate,
-      bitis: endDate,
-      hangiTip: this.testModeValue ? Type.eArsivDiger : Type.eArsivFatura,
-    });
-    return this.filterDocuments((response.data ?? []) as Record<string, unknown>[]);
+    const response = await this.dispatch(
+      "EARSIV_PORTAL_TASLAKLARI_GETIR",
+      "RG_TASLAKLAR",
+      {
+        baslangic: startDate,
+        bitis: endDate,
+        hangiTip: this.testModeValue ? Type.eArsivDiger : Type.eArsivFatura,
+      },
+    );
+    return this.filterDocuments(
+      (response.data ?? []) as Record<string, unknown>[],
+    );
   }
 
-  public async getAllIssuedToMe(startDate: string, endDate: string, hourlySearch = "NONE"): Promise<unknown> {
+  public async getAllIssuedToMe(
+    startDate: string,
+    endDate: string,
+    hourlySearch = "NONE",
+  ): Promise<unknown> {
     this.assertDateRange(startDate, endDate);
-    const response = await this.dispatch("EARSIV_PORTAL_ADIMA_KESILEN_BELGELERI_GETIR", "RG_ALICI_TASLAKLAR", {
-      baslangic: startDate,
-      bitis: endDate,
-      hourlySearchInterval: hourlySearch,
-    });
-    return this.filterDocuments((response.data ?? []) as Record<string, unknown>[]);
+    const response = await this.dispatch(
+      "EARSIV_PORTAL_ADIMA_KESILEN_BELGELERI_GETIR",
+      "RG_ALICI_TASLAKLAR",
+      {
+        baslangic: startDate,
+        bitis: endDate,
+        hourlySearchInterval: hourlySearch,
+      },
+    );
+    return this.filterDocuments(
+      (response.data ?? []) as Record<string, unknown>[],
+    );
   }
 
   private filterDocuments(documents: Record<string, unknown>[]): unknown {
@@ -463,7 +586,10 @@ export class GibClient {
     return `${this.testModeValue ? API.gateways.test : API.gateways.prod}${API.paths[path as keyof typeof API.paths]}`;
   }
 
-  public setParams(command: [string, string], payload: Record<string, unknown> = {}): Record<string, unknown> {
+  public setParams(
+    command: [string, string],
+    payload: Record<string, unknown> = {},
+  ): Record<string, unknown> {
     const [cmd, pageName] = command;
     return {
       callid: crypto.randomUUID(),
@@ -480,7 +606,14 @@ export class GibClient {
     }
   }
 
-  private async dispatch(cmd: string, pageName: string, payload: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
-    return this.client.requestJson<Record<string, unknown>>(this.getGateway("dispatch"), this.setParams([cmd, pageName], payload));
+  private async dispatch(
+    cmd: string,
+    pageName: string,
+    payload: Record<string, unknown> = {},
+  ): Promise<Record<string, unknown>> {
+    return this.client.requestJson<Record<string, unknown>>(
+      this.getGateway("dispatch"),
+      this.setParams([cmd, pageName], payload),
+    );
   }
 }

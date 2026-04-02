@@ -1,8 +1,16 @@
-import { arrayColumnSumWithAmountFormat, applyKeyMap, mapWithAmountFormat, FormatValidator } from "../utils";
+import {
+  arrayColumnSumWithAmountFormat,
+  applyKeyMap,
+  mapWithAmountFormat,
+  FormatValidator,
+} from "../utils";
 import { FormatError } from "../errors";
 import { BaseDocument } from "./base-document";
 import { asArray, asNumber, asString } from "./helpers";
-import { ProducerReceiptItemModel, type ProducerReceiptItemFields } from "./producer-receipt-item";
+import {
+  ProducerReceiptItemModel,
+  type ProducerReceiptItemFields,
+} from "./producer-receipt-item";
 import type { ModelMeta } from "./types";
 
 export type ProducerReceiptModelFields = {
@@ -67,7 +75,9 @@ export class ProducerReceiptModel extends BaseDocument<ProducerReceiptItemModel>
     this.initializeBase();
   }
 
-  public static create(fields: ProducerReceiptModelFields): ProducerReceiptModel {
+  public static create(
+    fields: ProducerReceiptModelFields,
+  ): ProducerReceiptModel {
     return new ProducerReceiptModel(fields);
   }
 
@@ -79,7 +89,9 @@ export class ProducerReceiptModel extends BaseDocument<ProducerReceiptItemModel>
     });
   }
 
-  public static importFromApi(data: Record<string, unknown>): ProducerReceiptModel {
+  public static importFromApi(
+    data: Record<string, unknown>,
+  ): ProducerReceiptModel {
     const mapped = applyKeyMap(data, keyMap, true);
     return new ProducerReceiptModel(mapped as ProducerReceiptModelFields, {
       imported: true,
@@ -87,8 +99,13 @@ export class ProducerReceiptModel extends BaseDocument<ProducerReceiptItemModel>
     });
   }
 
-  protected itemFactory(data: Record<string, unknown>, source: "fresh" | "model" | "api"): ProducerReceiptItemModel {
-    return source === "model" ? ProducerReceiptItemModel.import(data) : new ProducerReceiptItemModel(data as ProducerReceiptItemFields);
+  protected itemFactory(
+    data: Record<string, unknown>,
+    source: "fresh" | "model" | "api",
+  ): ProducerReceiptItemModel {
+    return source === "model"
+      ? ProducerReceiptItemModel.import(data)
+      : new ProducerReceiptItemModel(data as ProducerReceiptItemFields);
   }
 
   protected keyMap(): Record<string, string> {
@@ -102,10 +119,14 @@ export class ProducerReceiptModel extends BaseDocument<ProducerReceiptItemModel>
 
   protected calculateTotals(): void {
     const items = this.getItems(false) as ProducerReceiptItemModel[];
-    this.malHizmetToplamTutari = arrayColumnSumWithAmountFormat(items, "malHizmetTutari");
+    this.malHizmetToplamTutari = arrayColumnSumWithAmountFormat(
+      items,
+      "malHizmetTutari",
+    );
     this.vergilerDahilToplamTutar = this.malHizmetToplamTutari;
     this.odenecekTutar =
-      this.vergilerDahilToplamTutar - arrayColumnSumWithAmountFormat(this.getTaxes(), "amount");
+      this.vergilerDahilToplamTutar -
+      arrayColumnSumWithAmountFormat(this.getTaxes(), "amount");
   }
 
   public getTotals(): Record<string, number> {

@@ -5,4 +5,5 @@ export const DocumentType = {
 } as const;
 
 export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType];
-export const documentTypeCases = (): DocumentType[] => Object.values(DocumentType);
+export const documentTypeCases = (): DocumentType[] =>
+  Object.values(DocumentType);

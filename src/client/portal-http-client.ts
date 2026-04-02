@@ -13,13 +13,20 @@ export type TransportResponse<T = unknown> = {
   headers?: Headers;
 };
 
-export type HttpTransport = <T = unknown>(request: TransportRequest) => Promise<TransportResponse<T>>;
+export type HttpTransport = <T = unknown>(
+  request: TransportRequest,
+) => Promise<TransportResponse<T>>;
 
-export const defaultHttpTransport: HttpTransport = async <T>(request: TransportRequest) => {
+export const defaultHttpTransport: HttpTransport = async <T>(
+  request: TransportRequest,
+) => {
   const method = request.method ?? "POST";
   const body = request.form
     ? new URLSearchParams(
-        Object.entries(request.form).map(([key, value]) => [key, typeof value === "string" ? value : String(value)]),
+        Object.entries(request.form).map(([key, value]) => [
+          key,
+          typeof value === "string" ? value : String(value),
+        ]),
       ).toString()
     : undefined;
 
@@ -48,18 +55,36 @@ export const defaultHttpTransport: HttpTransport = async <T>(request: TransportR
 };
 
 export class PortalHttpClient {
-  constructor(private readonly transport: HttpTransport = defaultHttpTransport) {}
+  constructor(
+    private readonly transport: HttpTransport = defaultHttpTransport,
+  ) {}
 
   public async requestJson<T = Record<string, unknown>>(
     url: string,
     form?: Record<string, unknown>,
     method: "GET" | "POST" = "POST",
   ): Promise<T> {
-    const response = await this.transport<T>({ url, method, form, responseType: "json" });
+    const response = await this.transport<T>({
+      url,
+      method,
+      form,
+      responseType: "json",
+    });
     const payload = response.data as Record<string, unknown>;
 
-    if (!payload || payload.error || (typeof payload.data === "object" && payload.data && "hata" in payload.data)) {
-      throw new ApiError("İstek başarısız oldu.", form, payload, response.status);
+    if (
+      !payload ||
+      payload.error ||
+      (typeof payload.data === "object" &&
+        payload.data &&
+        "hata" in payload.data)
+    ) {
+      throw new ApiError(
+        "İstek başarısız oldu.",
+        form,
+        payload,
+        response.status,
+      );
     }
 
     return response.data;

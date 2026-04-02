@@ -52,31 +52,43 @@ export class SelfEmployedReceiptItemModel extends BaseItem {
     }
 
     if (!this.imported) {
-      this.gvStopajTutari = this.gvStopajTutari || percentage(this.brutUcret, this.gvStopajOrani);
+      this.gvStopajTutari =
+        this.gvStopajTutari || percentage(this.brutUcret, this.gvStopajOrani);
       this.netUcret = this.netUcret || this.brutUcret - this.gvStopajTutari;
-      this.kdvTutari = this.kdvTutari || percentage(this.brutUcret, this.kdvOrani);
+      this.kdvTutari =
+        this.kdvTutari || percentage(this.brutUcret, this.kdvOrani);
       this.kdvTevkifatTutari =
-        this.kdvTevkifatTutari || percentage(this.kdvTutari, this.kdvTevkifatOrani);
-      this.netAlinan = this.netAlinan || this.netUcret + this.kdvTutari - this.kdvTevkifatTutari;
+        this.kdvTevkifatTutari ||
+        percentage(this.kdvTutari, this.kdvTevkifatOrani);
+      this.netAlinan =
+        this.netAlinan ||
+        this.netUcret + this.kdvTutari - this.kdvTevkifatTutari;
     }
   }
 
-  public static import(data: Record<string, unknown>): SelfEmployedReceiptItemModel {
-    return new SelfEmployedReceiptItemModel({
-      neIcinAlindigi: asString(data.neIcinAlindigi),
-      brutUcret: asNumber(data.brutUcret),
-      kdvOrani: asNumber(data.kdvOrani ?? data.kdv),
-      gvStopajOrani: asNumber(data.gvStopajOrani ?? data.stopaj),
-      netUcret: asNumber(data.netUcret),
-      kdvTevkifatOrani: asNumber(data.kdvTevkifatOrani),
-      netAlinan: asNumber(data.netAlinan),
-      gvStopajTutari: asNumber(data.gvStopajTutari),
-      kdvTutari: asNumber(data.kdvTutari),
-      kdvTevkifatTutari: asNumber(data.kdvTevkifatTutari),
-    }, { imported: true, importSource: "model" });
+  public static import(
+    data: Record<string, unknown>,
+  ): SelfEmployedReceiptItemModel {
+    return new SelfEmployedReceiptItemModel(
+      {
+        neIcinAlindigi: asString(data.neIcinAlindigi),
+        brutUcret: asNumber(data.brutUcret),
+        kdvOrani: asNumber(data.kdvOrani ?? data.kdv),
+        gvStopajOrani: asNumber(data.gvStopajOrani ?? data.stopaj),
+        netUcret: asNumber(data.netUcret),
+        kdvTevkifatOrani: asNumber(data.kdvTevkifatOrani),
+        netAlinan: asNumber(data.netAlinan),
+        gvStopajTutari: asNumber(data.gvStopajTutari),
+        kdvTutari: asNumber(data.kdvTutari),
+        kdvTevkifatTutari: asNumber(data.kdvTevkifatTutari),
+      },
+      { imported: true, importSource: "model" },
+    );
   }
 
-  public static importFromApi(data: Record<string, unknown>): SelfEmployedReceiptItemModel {
+  public static importFromApi(
+    data: Record<string, unknown>,
+  ): SelfEmployedReceiptItemModel {
     return new SelfEmployedReceiptItemModel(
       {
         neIcinAlindigi: asString(data.neIcinAlindigi),

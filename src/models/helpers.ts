@@ -15,7 +15,8 @@ export function asBoolean(value: unknown, fallback = false): boolean {
   if (typeof value === "boolean") return value;
   if (typeof value === "string") {
     if (["true", "1", "evet"].includes(value.toLowerCase())) return true;
-    if (["false", "0", "hayır", "hayir"].includes(value.toLowerCase())) return false;
+    if (["false", "0", "hayır", "hayir"].includes(value.toLowerCase()))
+      return false;
   }
   return fallback;
 }

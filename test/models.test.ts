@@ -222,11 +222,13 @@ describe("model parity", () => {
       }),
     );
 
-  const exported = invoice.export();
-  const firstItem = (exported.malHizmetTable as Array<Record<string, unknown>>)[0]!;
-  expect(firstItem.V9015Orani).toBe(40);
-  expect(firstItem.V9015Tutari).toBe(7.2);
-  expect(exported.odenecekTutar).toBe(110.8);
+    const exported = invoice.export();
+    const firstItem = (
+      exported.malHizmetTable as Array<Record<string, unknown>>
+    )[0]!;
+    expect(firstItem.V9015Orani).toBe(40);
+    expect(firstItem.V9015Tutari).toBe(7.2);
+    expect(exported.odenecekTutar).toBe(110.8);
   });
 
   it("applies ozel matrah calculations", () => {

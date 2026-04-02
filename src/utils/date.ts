@@ -9,11 +9,15 @@ export function curdate(format: string, modify?: string): string {
       minute: "2-digit",
       second: "2-digit",
       hour12: false,
-    }).format(new Date()).replace(",", ""),
+    })
+      .format(new Date())
+      .replace(",", ""),
   );
 
   if (modify) {
-    const match = modify.match(/^([+-]\d+)\s+(day|days|month|months|year|years)$/i);
+    const match = modify.match(
+      /^([+-]\d+)\s+(day|days|month|months|year|years)$/i,
+    );
     if (match) {
       const amount = Number.parseInt(match[1]!, 10);
       const unit = match[2]!.toLowerCase();

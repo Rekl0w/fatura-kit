@@ -1,8 +1,43 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { Currency, DocumentType, InvoiceType, ObjectionMethod, Tax, Type, Unit, currencyCases, documentTypeCases, getCurrencyAlias, getInvoiceTypeAlias, getInvoiceTypeReasons, getTaxAlias, getTaxCodes, getTaxDefaultRate, getTypeAlias, getUnitAlias, invoiceTypeCases, objectionMethodCases, taxCases, taxHasDefaultRate, taxHasVat, taxIsStoppage, taxIsWithholding, unitCases } from "../enums";
+import {
+  Currency,
+  DocumentType,
+  InvoiceType,
+  ObjectionMethod,
+  Tax,
+  Type,
+  Unit,
+  currencyCases,
+  documentTypeCases,
+  getCurrencyAlias,
+  getInvoiceTypeAlias,
+  getInvoiceTypeReasons,
+  getTaxAlias,
+  getTaxCodes,
+  getTaxDefaultRate,
+  getTypeAlias,
+  getUnitAlias,
+  invoiceTypeCases,
+  objectionMethodCases,
+  taxCases,
+  taxHasDefaultRate,
+  taxHasVat,
+  taxIsStoppage,
+  taxIsWithholding,
+  unitCases,
+} from "../enums";
 import { GibClient, type GibClientOptions } from "../client/gib-client";
-import { InvoiceItemModel, InvoiceModel, InvoiceReturnItem, ProducerReceiptItemModel, ProducerReceiptModel, SelfEmployedReceiptItemModel, SelfEmployedReceiptModel, UserDataModel } from "../models";
+import {
+  InvoiceItemModel,
+  InvoiceModel,
+  InvoiceReturnItem,
+  ProducerReceiptItemModel,
+  ProducerReceiptModel,
+  SelfEmployedReceiptItemModel,
+  SelfEmployedReceiptModel,
+  UserDataModel,
+} from "../models";
 
 type SessionState = {
   testMode: boolean;
@@ -52,18 +87,31 @@ function makeClient(
     username: session.username,
     password: session.password,
     token: session.token,
-    ...(options.clientOptions?.transport ? { transport: options.clientOptions.transport } : {}),
+    ...(options.clientOptions?.transport
+      ? { transport: options.clientOptions.transport }
+      : {}),
   });
 }
 
-function buildPreviewDocument(documentType: string, payload: Record<string, unknown>) {
+function buildPreviewDocument(
+  documentType: string,
+  payload: Record<string, unknown>,
+) {
   if (documentType === DocumentType.Invoice) {
     const invoice = InvoiceModel.create(payload as never);
     if (Array.isArray(payload.malHizmetListe)) {
-      invoice.addItem(...payload.malHizmetListe.map((item) => new InvoiceItemModel(item as never)));
+      invoice.addItem(
+        ...payload.malHizmetListe.map(
+          (item) => new InvoiceItemModel(item as never),
+        ),
+      );
     }
     if (Array.isArray(payload.iadeListe)) {
-      invoice.addReturnItem(...payload.iadeListe.map((item) => new InvoiceReturnItem(item as never)));
+      invoice.addReturnItem(
+        ...payload.iadeListe.map(
+          (item) => new InvoiceReturnItem(item as never),
+        ),
+      );
     }
     return invoice;
   }
@@ -71,19 +119,29 @@ function buildPreviewDocument(documentType: string, payload: Record<string, unkn
   if (documentType === DocumentType.ProducerReceipt) {
     const receipt = ProducerReceiptModel.create(payload as never);
     if (Array.isArray(payload.malHizmetListe)) {
-      receipt.addItem(...payload.malHizmetListe.map((item) => new ProducerReceiptItemModel(item as never)));
+      receipt.addItem(
+        ...payload.malHizmetListe.map(
+          (item) => new ProducerReceiptItemModel(item as never),
+        ),
+      );
     }
     return receipt;
   }
 
   const receipt = SelfEmployedReceiptModel.create(payload as never);
   if (Array.isArray(payload.malHizmetListe)) {
-    receipt.addItem(...payload.malHizmetListe.map((item) => new SelfEmployedReceiptItemModel(item as never)));
+    receipt.addItem(
+      ...payload.malHizmetListe.map(
+        (item) => new SelfEmployedReceiptItemModel(item as never),
+      ),
+    );
   }
   return receipt;
 }
 
-export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): McpServer {
+export function createFaturaMcpServer(
+  options: FaturaMcpServerOptions = {},
+): McpServer {
   const session: SessionState = {
     testMode: false,
     username: null,
@@ -129,13 +187,18 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
     },
   );
 
-  server.tool("session_logout", "Aktif GİB oturumunu kapatır.", {}, async () => {
-    const client = makeClient(session, options);
-    const result = await client.logout();
-    session.token = null;
-    session.lastId = null;
-    return jsonText({ success: result });
-  });
+  server.tool(
+    "session_logout",
+    "Aktif GİB oturumunu kapatır.",
+    {},
+    async () => {
+      const client = makeClient(session, options);
+      const result = await client.logout();
+      session.token = null;
+      session.lastId = null;
+      return jsonText({ success: result });
+    },
+  );
 
   server.tool(
     "session_set_token",
@@ -144,7 +207,11 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
     async ({ token, testMode }) => {
       session.token = token;
       session.testMode = testMode;
-      return jsonText({ success: true, token, documentType: session.documentType });
+      return jsonText({
+        success: true,
+        token,
+        documentType: session.documentType,
+      });
     },
   );
 
@@ -178,7 +245,14 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
       session.documentType = documentType;
       const client = makeClient(session, options, documentType);
       const result = await client.createDraft(payload);
-      session.lastId = String(payload.faturaUuid ?? payload.uuid ?? payload.ettn ?? client.lastId() ?? "") || null;
+      session.lastId =
+        String(
+          payload.faturaUuid ??
+            payload.uuid ??
+            payload.ettn ??
+            client.lastId() ??
+            "",
+        ) || null;
       return jsonText({ success: result, lastId: session.lastId });
     },
   );
@@ -190,7 +264,9 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
       documentType: documentTypeSchema.default(DocumentType.Invoice),
       startDate: z.string(),
       endDate: z.string(),
-      signedState: z.enum(["all", "signed", "unsigned", "deleted"]).default("all"),
+      signedState: z
+        .enum(["all", "signed", "unsigned", "deleted"])
+        .default("all"),
       recipientName: z.string().optional(),
       recipientId: z.string().optional(),
       documentId: z.string().optional(),
@@ -210,7 +286,8 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
       if (args.recipientId) client.findRecipientId(args.recipientId);
       if (args.documentId) client.findDocumentId(args.documentId);
       if (args.ettn) client.findEttn(args.ettn);
-      if (args.selectColumn) client.selectColumn(args.selectColumn, args.selectKey);
+      if (args.selectColumn)
+        client.selectColumn(args.selectColumn, args.selectKey);
       if (args.limit) client.setLimit(args.limit, args.offset);
       args.sort === "desc" ? client.sortDesc() : client.sortAsc();
       const data = await client.getAll(args.startDate, args.endDate);
@@ -232,12 +309,30 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
       offset: z.number().int().min(0).default(0),
       sort: z.enum(["asc", "desc"]).default("desc"),
     },
-    async ({ documentType, startDate, endDate, hourlySearch, selectColumn, selectKey, limit, offset, sort }) => {
-      const client = makeClient(session, options, documentType ?? session.documentType);
+    async ({
+      documentType,
+      startDate,
+      endDate,
+      hourlySearch,
+      selectColumn,
+      selectKey,
+      limit,
+      offset,
+      sort,
+    }) => {
+      const client = makeClient(
+        session,
+        options,
+        documentType ?? session.documentType,
+      );
       if (selectColumn) client.selectColumn(selectColumn, selectKey);
       if (limit) client.setLimit(limit, offset);
       sort === "desc" ? client.sortDesc() : client.sortAsc();
-      const data = await client.getAllIssuedToMe(startDate, endDate, hourlySearch);
+      const data = await client.getAllIssuedToMe(
+        startDate,
+        endDate,
+        hourlySearch,
+      );
       return jsonText({ rowCount: client.rowCount(), data });
     },
   );
@@ -255,7 +350,10 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
   server.tool(
     "document_get",
     "UUID ile tek bir belge detayını getirir.",
-    { documentType: documentTypeSchema.default(DocumentType.Invoice), uuid: z.string() },
+    {
+      documentType: documentTypeSchema.default(DocumentType.Invoice),
+      uuid: z.string(),
+    },
     async ({ documentType, uuid }) => {
       const client = makeClient(session, options, documentType);
       return jsonText(await client.getDocument(uuid));
@@ -326,7 +424,9 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
     },
     async ({ documentType, uuid, dirName, fileName }) => {
       const client = makeClient(session, options, documentType);
-      return jsonText({ path: await client.saveToDisk(uuid, dirName, fileName) });
+      return jsonText({
+        path: await client.saveToDisk(uuid, dirName, fileName),
+      });
     },
   );
 
@@ -356,15 +456,25 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
     },
   );
 
-  server.tool("profile_get", "GİB profil bilgilerini getirir.", {}, async () => {
-    const client = makeClient(session, options);
-    return jsonText(await client.getUserData());
-  });
+  server.tool(
+    "profile_get",
+    "GİB profil bilgilerini getirir.",
+    {},
+    async () => {
+      const client = makeClient(session, options);
+      return jsonText(await client.getUserData());
+    },
+  );
 
-  server.tool("session_get_phone_number", "Portalda kayıtlı GSM numarasını getirir.", {}, async () => {
-    const client = makeClient(session, options, session.documentType);
-    return jsonText({ phoneNumber: await client.getPhoneNumber() });
-  });
+  server.tool(
+    "session_get_phone_number",
+    "Portalda kayıtlı GSM numarasını getirir.",
+    {},
+    async () => {
+      const client = makeClient(session, options, session.documentType);
+      return jsonText({ phoneNumber: await client.getPhoneNumber() });
+    },
+  );
 
   server.tool(
     "profile_update",
@@ -407,7 +517,9 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
     },
     async ({ documentType, uuid, explanation }) => {
       const client = makeClient(session, options, documentType);
-      return jsonText({ message: await client.cancellationRequest(uuid, explanation) });
+      return jsonText({
+        message: await client.cancellationRequest(uuid, explanation),
+      });
     },
   );
 
@@ -422,10 +534,23 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
       documentDate: z.string(),
       explanation: z.string(),
     },
-    async ({ documentType, uuid, objectionMethod, documentId, documentDate, explanation }) => {
+    async ({
+      documentType,
+      uuid,
+      objectionMethod,
+      documentId,
+      documentDate,
+      explanation,
+    }) => {
       const client = makeClient(session, options, documentType);
       return jsonText({
-        message: await client.objectionRequest(uuid, objectionMethod, documentId, documentDate, explanation),
+        message: await client.objectionRequest(
+          uuid,
+          objectionMethod,
+          documentId,
+          documentDate,
+          explanation,
+        ),
       });
     },
   );
@@ -434,14 +559,26 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
     "catalog_list",
     "Enum ve katalog verilerini döner.",
     {
-      name: z.enum(["documentTypes", "invoiceTypes", "taxes", "units", "currencies", "objectionMethods", "types"]),
+      name: z.enum([
+        "documentTypes",
+        "invoiceTypes",
+        "taxes",
+        "units",
+        "currencies",
+        "objectionMethods",
+        "types",
+      ]),
     },
     async ({ name }) => {
       const data =
         name === "documentTypes"
           ? documentTypeCases()
           : name === "invoiceTypes"
-            ? invoiceTypeCases().map((item) => ({ value: item, alias: getInvoiceTypeAlias(item), reasons: getInvoiceTypeReasons(item) }))
+            ? invoiceTypeCases().map((item) => ({
+                value: item,
+                alias: getInvoiceTypeAlias(item),
+                reasons: getInvoiceTypeReasons(item),
+              }))
             : name === "taxes"
               ? taxCases().map((item) => ({
                   value: item,
@@ -454,12 +591,21 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
                   defaultRate: getTaxDefaultRate(item) ?? null,
                 }))
               : name === "units"
-                ? unitCases().map((item) => ({ value: item, alias: getUnitAlias(item) }))
+                ? unitCases().map((item) => ({
+                    value: item,
+                    alias: getUnitAlias(item),
+                  }))
                 : name === "currencies"
-                  ? currencyCases().map((item) => ({ value: item, alias: getCurrencyAlias(item) }))
+                  ? currencyCases().map((item) => ({
+                      value: item,
+                      alias: getCurrencyAlias(item),
+                    }))
                   : name === "objectionMethods"
                     ? objectionMethodCases()
-                    : [Type.eArsivFatura, Type.eArsivDiger].map((item) => ({ value: item, alias: getTypeAlias(item) }));
+                    : [Type.eArsivFatura, Type.eArsivDiger].map((item) => ({
+                        value: item,
+                        alias: getTypeAlias(item),
+                      }));
 
       return jsonText(data);
     },
@@ -474,7 +620,10 @@ export function createFaturaMcpServer(options: FaturaMcpServerOptions = {}): Mcp
     },
     async ({ documentType, payload }) => {
       const document = buildPreviewDocument(documentType, payload);
-      return jsonText({ export: document.export(), paymentTotal: document.getPaymentTotal() });
+      return jsonText({
+        export: document.export(),
+        paymentTotal: document.getPaymentTotal(),
+      });
     },
   );
 
