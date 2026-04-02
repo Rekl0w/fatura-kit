@@ -1,0 +1,23 @@
+{
+  "vknTckn": "11111111111",
+  "unvan": "Demo Şirketi",
+  "ad": "Mert",
+  "soyad": "Levent",
+  "cadde": "Demo Cadde",
+  "apartmanAdi": "Demo Apartmanı",
+  "apartmanNo": "1",
+  "kapiNo": "5",
+  "kasaba": "Nilüfer",
+  "ilce": "Nilüfer",
+  "il": "Bursa",
+  "postaKodu": "16000",
+  "ulke": "Türkiye",
+  "telNo": "5551234567",
+  "faksNo": "",
+  "ePostaAdresi": "demo@example.com",
+  "webSitesiAdresi": "https://example.com",
+  "vergiDairesi": "Bursa",
+  "sicilNo": "123456",
+  "isMerkezi": "Merkez",
+  "mersisNo": "987654321"
+}
